@@ -11,6 +11,8 @@ const generateToken = (userId) => {
 // for registor the user
 const register = async (req, res) => {
     try {
+        console.log("started register");
+        
         const { name, email, password } = req.body
         const existUser = await User.findOne({ email })
         if (existUser) {
