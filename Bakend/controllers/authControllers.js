@@ -19,7 +19,7 @@ const register = async (req, res) => {
         const newUser = new User({ name, email, password })
         await newUser.save()
 
-        const token = generateToken(user._id)
+        const token = generateToken(newUser._id)
 
         res.status(201).json({
             message: " user registered successfully",
@@ -41,7 +41,7 @@ const login = async (req, res) => {
         const { email, password } = req.body
         const existUser = await User.findOne({ email })
         if (!existUser) {
-            return res(400).json({ message: "user is not registered " })
+            return res.status(400).json({ message: "user is not registered " })
         }
         const isMatch = await existUser.comparePassword(password)
         if (!isMatch) {
@@ -60,6 +60,7 @@ const login = async (req, res) => {
 
         })
     } catch (error) {
+        console.error("Login Error:", error)
         res.status(500).json({ message: 'server error' })
     }
 
