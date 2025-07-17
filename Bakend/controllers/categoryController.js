@@ -1,15 +1,15 @@
 // controller/categoryController
 
-const category = require('../models/Category')
-const subCategory = require('../models/Subcategory')
-const { findOne } = require('../models/User')
+const Category = require('../models/Category')
+const SubCategory = require('../models/Subcategory')
 
 // to get all category
 const getAllCategory = async (req, res) => {
     try {
-        const categories = await category.find()
-        req.json(categories)
+        const categories = await Category.find()
+        res.json(categories)
     } catch (error) {
+        console.error("Error in getAllCategory:", error);
         res.status(500).json({ message: "server error" })
     }
 }
@@ -17,9 +17,11 @@ const getAllCategory = async (req, res) => {
 // to get all subCategory
 const getAllsubCategories = async (req, res) => {
     try {
-        const subCategory = await subCategory.find().populate('category', 'name')
-        res.json(subCategory)
+        
+        const sub = await SubCategory.find().populate('category', 'name')
+        res.json(sub)
     } catch (error) {
+            console.error("Error in getAllsubCategories:", error);
         res.status(500).json({ message: "server error" })
 
     }
@@ -29,11 +31,12 @@ const getAllsubCategories = async (req, res) => {
 const createCategory = async (req, res) => {
     try {
         const { name } = req.body
-        const findcategory = await findOne({ name })
+
+        const findcategory = await Category.findOne({ name })
         if (findcategory) {
             return res.status(400).json({ message: "category already exist" })
         }
-        const newCategory = new category({ name })
+        const newCategory = new Category({ name })
         await newCategory.save()
 
         res.status(201).json({
@@ -41,8 +44,8 @@ const createCategory = async (req, res) => {
             newCategory
         })
     } catch (error) {
-        res.status(500).json({ message: "server error" })
-
+        console.error("Error in createCategory:", error);
+        res.status(500).json({ message: "Server error" });
     }
 }
 
@@ -50,34 +53,37 @@ const createCategory = async (req, res) => {
 const creatSubCategory = async (req, res) => {
     try {
         const { name, categoryId } = req.body
-        const subCategory = new subCategory({
+        const subcategory = new SubCategory({
             name,
             category: categoryId
         })
-        await subCategory.save()
+        await subcategory.save()
         res.status(201).json({
             message: "Sub-category created successfully",
-            subCategory,
+            subcategory,
         })
     } catch (error) {
+        console.error("Error in createCategory:", error);
         res.status(500).json({ message: "Server error", error: error.message })
     }
 }
 
 // Get subcategories by category
 const getSubCategories = async (req, res) => {
-  try {
-    const { categoryId } = req.params
-    const subCategories = await subCategory.find({ category: categoryId })
-      .populate("category", "name")
-     res.json(subCategories)
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message })
-  }
+    try {
+        const { categoryId } = req.params
+        const subCategories = await SubCategory.find({ category: categoryId })
+            .populate("category", "name")
+        res.json(subCategories)
+    } catch (error) {        
+        console.error(" Error:", error)
+
+        res.status(500).json({ message: "Server error", error: error.message })
+    }
 }
 
 
-module.exports={
+module.exports = {
     getSubCategories,
     getAllsubCategories,
     creatSubCategory,

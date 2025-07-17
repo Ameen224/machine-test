@@ -1,43 +1,69 @@
 // src/pages/AuthPage.jsx
+import React from "react"
 import { useState } from "react"
 import { Mail, Lock, User } from "lucide-react"
+import { API_BASE } from "../utils/api" 
+import { useNavigate } from "react-router-dom"
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(false)
   const [form, setForm] = useState({ name: "", email: "", password: "" })
+  const navigate = useNavigate() 
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Form submitted:", form, "Is Login:", isLogin)
-    setForm({ name: "", email: "", password: "" })
-    alert(`Successfully ${isLogin ? "logged in" : "signed up"}! (Simulated)`)
+    console.log("Frontend: Attempting to submit form...", { form, isLogin })
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register"
+    const url = `${API_BASE}${endpoint}`
+    try {
+      console.log(`Frontend: Sending POST request to ${url}`)
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      })
+      const data = await response.json()
+      console.log("Frontend: Received response from backend:", data)
+      if (response.ok) {
+        alert(`Successfully ${isLogin ? "logged in" : "signed up"}! Message: ${data.message}`)
+        localStorage.setItem("token", data.token) // Store the token
+        setForm({ name: "", email: "", password: "" }) // Clear form on success
+        navigate("/home") // Redirect to home page on success
+      } else {
+        alert(`Error ${isLogin ? "logging in" : "signing up"}: ${data.message || "Unknown error"}`)
+      }
+    } catch (error) {
+      console.error("Frontend: Network or server error:", error)
+      alert("Failed to connect to the server. Please ensure your backend is running and accessible.")
+    }
   }
 
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-gray-100">
-      <div className="flex flex-col md:flex-row w-full h-full">
+    <div className="flex h-screen w-full items-center justify-center bg-gray-100">
+      <div className="flex h-full w-full flex-col md:flex-row">
         {/* LEFT PANEL */}
         <div
-          className={`relative flex flex-1 flex-col h-full items-center justify-center p-8 md:p-12 transition-colors duration-700 ${
+          className={`relative flex flex-1 flex-col items-center justify-center p-8 transition-colors duration-700 md:p-12 ${
             isLogin ? "bg-white text-black" : "bg-[#003366] text-white"
           }`}
         >
           {/* Geometric Shapes */}
           {!isLogin && (
             <>
-              <div className="absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-white opacity-10 pointer-events-none"></div>
-              <div className="absolute -top-10 -right-10 h-32 w-32 rotate-45 bg-white opacity-10 pointer-events-none"></div>
-              <div className="absolute bottom-10 right-10 h-20 w-20 rotate-12 bg-white opacity-10 pointer-events-none"></div>
-              <div className="absolute top-20 left-20 h-16 w-16 rotate-90 bg-white opacity-10 pointer-events-none"></div>
+              <div className="pointer-events-none absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-white opacity-10"></div>
+              <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rotate-45 bg-white opacity-10"></div>
+              <div className="pointer-events-none absolute bottom-10 right-10 h-20 w-20 rotate-12 bg-white opacity-10"></div>
+              <div className="pointer-events-none absolute left-20 top-20 h-16 w-16 rotate-90 bg-white opacity-10"></div>
             </>
           )}
-
           {isLogin ? (
             <form
               onSubmit={handleSubmit}
-              className="z-10 w-full max-w-md space-y-5 h-full flex flex-col justify-center"
+              className="z-10 flex h-full w-full max-w-md flex-col justify-center space-y-5"
             >
               <h2 className="mb-6 text-center text-3xl font-bold text-[#FF8C00]">Sign In to Your Account</h2>
               <div className="relative">
@@ -65,7 +91,9 @@ export default function AuthPage() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               </div>
               <div className="text-right text-sm text-gray-500">
-                <a href="#" className="hover:underline">Forgot password?</a>
+                <a href="#" className="hover:underline">
+                  Forgot password?
+                </a>
               </div>
               <button
                 type="submit"
@@ -97,27 +125,25 @@ export default function AuthPage() {
             </div>
           )}
         </div>
-
         {/* RIGHT PANEL */}
         <div
-          className={`relative flex flex-1 flex-col h-full items-center justify-center p-8 md:p-12 transition-colors duration-700 ${
+          className={`relative flex flex-1 flex-col items-center justify-center p-8 transition-colors duration-700 md:p-12 ${
             isLogin ? "bg-[#003366] text-white" : "bg-white text-black"
           }`}
         >
           {/* Geometric Shapes */}
           {isLogin && (
             <>
-              <div className="absolute -top-20 -right-20 h-48 w-48 rounded-full bg-white opacity-10 pointer-events-none"></div>
-              <div className="absolute -bottom-10 -left-10 h-32 w-32 rotate-45 bg-white opacity-10 pointer-events-none"></div>
-              <div className="absolute top-10 left-10 h-20 w-20 rotate-12 bg-white opacity-10 pointer-events-none"></div>
-              <div className="absolute bottom-20 right-20 h-16 w-16 rotate-90 bg-white opacity-10 pointer-events-none"></div>
+              <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-white opacity-10"></div>
+              <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rotate-45 bg-white opacity-10"></div>
+              <div className="pointer-events-none absolute left-10 top-10 h-20 w-20 rotate-12 bg-white opacity-10"></div>
+              <div className="pointer-events-none absolute bottom-20 right-20 h-16 w-16 rotate-90 bg-white opacity-10"></div>
             </>
           )}
-
           {!isLogin ? (
             <form
               onSubmit={handleSubmit}
-              className="z-10 w-full max-w-md space-y-5 h-full flex flex-col justify-center"
+              className="z-10 flex h-full w-full max-w-md flex-col justify-center space-y-5"
             >
               <h2 className="mb-6 text-center text-3xl font-bold text-[#FF8C00]">Create Account</h2>
               <div className="relative">

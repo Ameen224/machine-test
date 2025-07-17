@@ -22,6 +22,8 @@ const register = async (req, res) => {
         await newUser.save()
 
         const token = generateToken(newUser._id)
+        console.log("token generated:", token);
+        
 
         res.status(201).json({
             message: " user registered successfully",
@@ -49,11 +51,13 @@ const login = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ message: "The password is incorrect" })
         }
-        const Token = generateToken(existUser._id)
+        const token = generateToken(existUser._id)
+         console.log("token generated:", token);
+
 
         res.json({
             message: "user is loggedin",
-            Token,
+            token,
             user: {
                 id: existUser._id,
                 name: existUser.name,

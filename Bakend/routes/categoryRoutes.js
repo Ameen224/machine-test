@@ -13,8 +13,8 @@ const router = express.Router()
 
 router.get('/',getAllCategory)
 router.post('/',auth,validateCategory,createCategory)
-router.get('/subcategories',getSubCategories)
-router.get('/:categoryId/subcategories',getAllsubCategories)
+router.get('/subcategories',getAllsubCategories)
+router.get('/:categoryId/subcategories',getSubCategories)
 router.post('/subcategories',auth,validateSubCategory,creatSubCategory)
 
 module.exports = router 

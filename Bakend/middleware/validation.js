@@ -63,52 +63,60 @@ const validateSubCategory = (req, res, next) => {
 
 // validation for product 
 const validateProduct = (req, res, next) => {
-  const { name, description, category, subCategory, variants } = req.body
+  const { name, description, subCategory } = req.body;
+  let { variants } = req.body;
 
   if (!name || name.trim().length === 0) {
-    return res.status(400).json({ message: "Product name is required" })
+    return res.status(400).json({ message: "Product name is required" });
   }
 
   if (!description || description.trim().length === 0) {
-    return res.status(400).json({ message: "Product description is required" })
-  }
-
-  if (!category) {
-    return res.status(400).json({ message: "Category is required" })
+    return res.status(400).json({ message: "Product description is required" });
   }
 
   if (!subCategory) {
-    return res.status(400).json({ message: "Sub-category is required" })
+    return res.status(400).json({ message: "Sub-category is required" });
   }
 
-  if (!variants || !Array.isArray(variants) || variants.length === 0) {
-    return res.status(400).json({ message: "At least one product variant is required" })
+  try {
+    if (typeof variants === "string") {
+      variants = JSON.parse(variants); 
+    }
+  } catch (err) {
+    return res.status(400).json({ message: "Invalid variants format" });
+  }
+
+  if (!Array.isArray(variants) || variants.length === 0) {
+    return res.status(400).json({ message: "At least one product variant is required" });
   }
 
   // Validate each variant
   for (let i = 0; i < variants.length; i++) {
-    const variant = variants[i]
+    const variant = variants[i];
     if (!variant.ram || !variant.price || variant.quantity === undefined) {
       return res.status(400).json({
         message: `Variant ${i + 1}: RAM, price, and quantity are required`,
-      })
+      });
     }
 
     if (variant.price < 0) {
       return res.status(400).json({
         message: `Variant ${i + 1}: Price cannot be negative`,
-      })
+      });
     }
 
     if (variant.quantity < 0) {
       return res.status(400).json({
         message: `Variant ${i + 1}: Quantity cannot be negative`,
-      })
+      });
     }
   }
 
-  next()
-}
+  req.body.variants = variants;
+
+  next();
+};
+
 
 module.exports = {
   validateRegister,

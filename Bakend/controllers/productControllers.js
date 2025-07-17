@@ -11,6 +11,8 @@ const searchProducts = async (req, res) => {
         });
         res.json(products);
     } catch (error) {
+        console.error(" Error:", error)
+
         res.status(500).json({ message: error.message });
     }
 };
@@ -37,7 +39,7 @@ const getProducts = async (req, res) => {
         const filter = {};
         if (subCategory) filter.subCategory = subCategory;
 
-        const products = await Product.find(filter)
+        const products = await product.find(filter)
             .populate("subCategory")
             .skip((page - 1) * limit)
             .limit(Number(limit));
@@ -57,11 +59,20 @@ const getProducts = async (req, res) => {
 // to get single product 
 const getoneProduct = async (req, res) => {
     try {
-        const product = await product.findById(req.params.id).populate("subCategory");
-        if (!product) return res.status(404).json({ message: "Product not found" });
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid product ID" });
+        }
+
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
         res.json(product);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
@@ -69,17 +80,25 @@ const getoneProduct = async (req, res) => {
 const createProduct = async (req, res) => {
     try {
         const { name, description, subCategory, variants } = req.body;
+        
         const images = req.files.map(file => file.filename);
-        const parsedVariants = JSON.parse(variants);
-        const product = await product.create({
+        let parsedVariants
+        if (typeof req.body.variants === 'string') {
+            parsedVariants = JSON.parse(req.body.variants)
+        } else {
+            parsedVariants = req.body.variants
+        }
+        const Product = await product.create({
             name,
             description,
             subCategory,
             variants: parsedVariants,
             images
         });
-        res.status(201).json(product);
+        res.status(201).json(Product);
     } catch (error) {
+        console.error(" Error:", error)
+
         res.status(500).json({ message: error.message });
     }
 };
